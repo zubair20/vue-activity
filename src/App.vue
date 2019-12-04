@@ -3,7 +3,7 @@
     <nav class="navbar is-white topNav">
       <div class="container">
         <div class="navbar-brand">
-          <h1>Activity Planner</h1>
+          <h1>{{ fullAppName }}</h1>
         </div>
       </div>
     </nav>
@@ -39,7 +39,7 @@
               </div>
               <div class="field is-grouped">
                 <div class="control">
-                  <button class="button is-link" @click="createActivity">Create Activity</button>
+                  <button class="button is-link" :disabled="!isFormValid" @click="createActivity">Create Activity</button>
                 </div>
                 <div class="control">
                   <button class="button is-text" @click="toggleFormDisplay">Cancel</button>
@@ -50,7 +50,9 @@
         </div>
         <div class="column is-9">
           <div class="box content">
-            <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity"></ActivityItem>
+            <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" />
+            <div class="activity-length">Currently {{ activityLength }} Activities</div>
+            <div class="activity-motivation">{{ activityMotivation }}</div>
           </div>
         </div>
       </div>
@@ -60,41 +62,73 @@
 
 <script>
 import ActivityItem from "@/components/ActivityItem";
-import {fetchActivities} from "@/api";
+import {fetchActivities, fetchUser, fetchCategories} from "@/api";
 export default {
   name: 'app',
   components: {ActivityItem},
   data(){
     return {
       isFormDisplayed: false,
+      creator: 'Zubair Akhtar',
+      appName: 'Activity Planner',
+      watchAppName: 'Activity Planner by Zubair Akhtar',
       newActivity: {
         title:'',
         notes:''
       },
-      message: 'Hellow Vue!',
-      titleMessage: 'Title Message Vue!!!!!',
-      isTextDisplayed: true,
-      user: {
-        name: 'Filip Jerga',
-        id: '-Aj34jknvncx98812',
-      },
+      user: {},
       activities: {},
-      categories: {
-        '1546969049': {text: 'books'},
-        '1546969225': {text: 'movies'}
+      categories: {}
+    }
+  },
+  // watch:{
+  //   creator(val){
+  //     this.watchAppName = this.appName + ' by ' + val;
+  //   },
+  //   appName(val){
+  //     this.watchAppName = val + ' by ' + this.appName;
+  //   }
+  // },
+  computed:{
+    isFormValid(){
+      return this.newActivity.title && this.newActivity.notes;
+    },
+    fullAppName(){
+      return this.appName + ' by ' + this.creator;
+    },
+    activityLength(){
+      return Object.keys(this.activities).length
+    },
+    activityMotivation(){
+      if (this.activityLength && this.activityLength <5) {
+        return 'Nice to see some goals (:'
+      }else if (this.activityLength >= 5) {
+        return 'So many Activities! Good Job!'
+      }else{
+        return 'No Activities, So sad :('
       }
     }
   },
   created(){
     this.activities = fetchActivities()
+    this.user = fetchUser()
+    this.categories = fetchCategories()
+    console.log(this.user);
+    console.log(this.categories);
+
+    
   },
+  
   methods:{
     toggleFormDisplay(){
       this.isFormDisplayed = !this.isFormDisplayed
     },
     createActivity(){
       //console.log(this.newActivity);
-    }
+    },
+    /*isFormValid(){
+      return this.newActivity.title && this.newActivity.notes;
+    }*/
   }
 }
 </script>
@@ -112,6 +146,12 @@ html,body {
 }
 footer {
   background-color: #F2F6FA !important;
+}
+.activity-motivation{
+  float: right;
+}
+.activity-length{
+  display: inline-block;
 }
 .topNav {
   border-top: 5px solid #3498DB;
