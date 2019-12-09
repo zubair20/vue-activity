@@ -24,10 +24,19 @@
           <ActivityCreate @activityCreated="addActivity" :categories="categories" />
         </div>
         <div class="column is-9">
-          <div class="box content">
-            <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" />
-            <div class="activity-length">Currently {{ activityLength }} Activities</div>
-            <div class="activity-motivation">{{ activityMotivation }}</div>
+          <div class="box content" :class="{fetching: isFetching, 'has-error':error}">
+            <div v-if="error">
+              {{error}}
+            </div>
+            <div v-else>
+              <div v-if="isFetching">Loading....</div>
+              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" />
+            </div>
+            
+            <div v-if="!isFetching">
+              <div class="activity-length">Currently {{ activityLength }} Activities</div>
+              <div class="activity-motivation">{{ activityMotivation }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -49,10 +58,13 @@ export default {
       
       creator: 'Zubair Akhtar',
       appName: 'Activity Planner',
+      isFetching: false,
+      error: null,
       watchAppName: 'Activity Planner by Zubair Akhtar',
       user: {},
       activities: {},
-      categories: {}
+      categories: {},
+
     }
   },
   // watch:{
@@ -81,8 +93,15 @@ export default {
     }
   },
   created(){
-    fetchActivities().then((activities)=>{
+    this.isFetching = true
+    fetchActivities()
+    .then((activities)=>{
       this.activities = activities
+      this.isFetching = false
+    })
+    .catch(err =>{
+        this.error = err
+        this.isFetching = false
     })
     this.user = fetchUser()
     this.categories = fetchCategories()
@@ -118,6 +137,12 @@ html,body {
 }
 footer {
   background-color: #F2F6FA !important;
+}
+.fetching{
+  border: 2px solid orange;
+}
+.has-error{
+  border: 2px solid red;
 }
 .activity-motivation{
   float: right;
