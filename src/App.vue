@@ -11,7 +11,7 @@
     <section class="container">
       <div class="columns">
         <div class="column is-3">
-          <ActivityCreate :categories="categories" @activityCreated="addActivity" />
+          <ActivityCreate :categories="categories"/>
         </div>
         <div class="column is-9">
           <div class="box content" :class="{fetching: isFetching, 'has-error':error}">
@@ -20,7 +20,7 @@
             </div>
             <div v-else>
               <div v-if="isFetching">Loading....</div>
-              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" :categories="categories" @activityDeleted="handleActivityDelete" />
+              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" :categories="categories" />
             </div>
             
             <div v-if="!isFetching">
@@ -36,25 +36,26 @@
 
 <script>
 import Vue from "vue";
+import store from './store'
 
 import ActivityItem from "@/components/ActivityItem";
 import ActivityCreate from "@/components/ActivityCreate";
 import TheNavbar from "@/components/TheNavbar";
-import { fetchActivities, fetchUser, fetchCategories, deleteActivityAPI } from '@/api'
+//import { fetchActivities, fetchUser, fetchCategories, deleteActivityAPI } from '@/api'
 export default {
   name: 'app',
   components: {ActivityItem ,ActivityCreate, TheNavbar},
   data(){
+    const { state: {activities, categories}} = store
     return {
-      
       creator: 'Zubair Akhtar',
       appName: 'Activity Planner',
       isFetching: false,
       error: null,
       watchAppName: 'Activity Planner by Zubair Akhtar',
       user: {},
-      activities: null,
-      categories: null,
+      activities,
+      categories,
 
     }
   },
@@ -88,18 +89,17 @@ export default {
   },
   created(){
     this.isFetching = true
-    fetchActivities()
+    store.fetchActivities()
     .then((activities)=>{
-      this.activities = activities
       this.isFetching = false
     })
     .catch(err =>{
         this.error = err
         this.isFetching = false
     })
-    this.user = fetchUser()
-    fetchCategories().then(categories =>{
-      this.categories = categories
+    this.user = store.fetchUser()
+    store.fetchCategories().then(categories =>{
+      
     })
     console.log(this.user);
     console.log(this.categories);
@@ -107,23 +107,6 @@ export default {
     
   },
   
-  methods:{
-    addActivity(newActivity){
-      //this.activities[newActivity.id] = newActivity
-      Vue.set(this.activities, newActivity.id, newActivity)
-      console.log(newActivity);
-    },
-    handleActivityDelete (activity) {
-      console.log(activity)
-      deleteActivityAPI(activity)
-        .then(deletedActivity => {
-          Vue.delete(this.activities, deletedActivity.id)
-        })
-    }
-    /*isFormValid(){
-      return this.newActivity.title && this.newActivity.notes;
-    }*/
-  }
 }
 </script>
 
