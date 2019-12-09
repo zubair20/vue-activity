@@ -21,32 +21,7 @@
     <section class="container">
       <div class="columns">
         <div class="column is-3">
-          <a v-if="!isFormDisplayed" class="button is-primary is-block is-alt is-large" href="#" @click="toggleFormDisplay">New Activity</a>
-          <div v-if="isFormDisplayed" class="create-form">
-            <h2>Create Activity</h2>
-            <form>
-              <div class="field">
-                <label class="label">Title</label>
-                <div class="control">
-                  <input v-model="newActivity.title" class="input" type="text" placeholder="Read a Book">
-                </div>
-              </div>
-              <div class="field">
-                <label class="label">Notes</label>
-                <div class="control">
-                  <textarea v-model="newActivity.notes" class="textarea" placeholder="Write some notes here"></textarea>
-                </div>
-              </div>
-              <div class="field is-grouped">
-                <div class="control">
-                  <button class="button is-link" :disabled="!isFormValid" @click="createActivity">Create Activity</button>
-                </div>
-                <div class="control">
-                  <button class="button is-text" @click="toggleFormDisplay">Cancel</button>
-                </div>
-              </div>
-            </form>
-          </div>
+          <ActivityCreate @activityCreated="addActivity" :categories="categories" />
         </div>
         <div class="column is-9">
           <div class="box content">
@@ -61,21 +36,20 @@
 </template>
 
 <script>
+import Vue from "vue";
+
 import ActivityItem from "@/components/ActivityItem";
+import ActivityCreate from "@/components/ActivityCreate";
 import {fetchActivities, fetchUser, fetchCategories} from "@/api";
 export default {
   name: 'app',
-  components: {ActivityItem},
+  components: {ActivityItem ,ActivityCreate},
   data(){
     return {
-      isFormDisplayed: false,
+      
       creator: 'Zubair Akhtar',
       appName: 'Activity Planner',
       watchAppName: 'Activity Planner by Zubair Akhtar',
-      newActivity: {
-        title:'',
-        notes:''
-      },
       user: {},
       activities: {},
       categories: {}
@@ -90,9 +64,6 @@ export default {
   //   }
   // },
   computed:{
-    isFormValid(){
-      return this.newActivity.title && this.newActivity.notes;
-    },
     fullAppName(){
       return this.appName + ' by ' + this.creator;
     },
@@ -110,7 +81,9 @@ export default {
     }
   },
   created(){
-    this.activities = fetchActivities()
+    fetchActivities().then((activities)=>{
+      this.activities = activities
+    })
     this.user = fetchUser()
     this.categories = fetchCategories()
     console.log(this.user);
@@ -120,12 +93,11 @@ export default {
   },
   
   methods:{
-    toggleFormDisplay(){
-      this.isFormDisplayed = !this.isFormDisplayed
-    },
-    createActivity(){
-      //console.log(this.newActivity);
-    },
+    addActivity(newActivity){
+      //this.activities[newActivity.id] = newActivity
+      Vue.set(this.activities, newActivity.id, newActivity)
+      console.log(newActivity);
+    }
     /*isFormValid(){
       return this.newActivity.title && this.newActivity.notes;
     }*/
