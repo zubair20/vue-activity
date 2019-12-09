@@ -1,5 +1,5 @@
 <template>
-  <div id="activityApp">
+  <div v-if="isDataLoaded" id="activityApp">
     <nav class="navbar is-white topNav">
       <div class="container">
         <div class="navbar-brand">
@@ -7,30 +7,20 @@
         </div>
       </div>
     </nav>
-    <nav class="navbar is-white">
-      <div class="container">
-        <div class="navbar-menu">
-          <div class="navbar-start">
-            <a class="navbar-item is-active" href="#">Newest</a>
-            <a class="navbar-item" href="#">In Progress</a>
-            <a class="navbar-item" href="#">Finished</a>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <TheNavbar />
     <section class="container">
       <div class="columns">
         <div class="column is-3">
-          <ActivityCreate @activityCreated="addActivity" :categories="categories" />
+          <ActivityCreate :categories="categories" @activityCreated="addActivity" />
         </div>
         <div class="column is-9">
           <div class="box content" :class="{fetching: isFetching, 'has-error':error}">
             <div v-if="error">
-              {{error}}
+              {{ error }}
             </div>
             <div v-else>
               <div v-if="isFetching">Loading....</div>
-              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" />
+              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" :categories="categories" />
             </div>
             
             <div v-if="!isFetching">
@@ -49,10 +39,11 @@ import Vue from "vue";
 
 import ActivityItem from "@/components/ActivityItem";
 import ActivityCreate from "@/components/ActivityCreate";
+import TheNavbar from "@/components/TheNavbar";
 import {fetchActivities, fetchUser, fetchCategories} from "@/api";
 export default {
   name: 'app',
-  components: {ActivityItem ,ActivityCreate},
+  components: {ActivityItem ,ActivityCreate, TheNavbar},
   data(){
     return {
       
@@ -62,8 +53,8 @@ export default {
       error: null,
       watchAppName: 'Activity Planner by Zubair Akhtar',
       user: {},
-      activities: {},
-      categories: {},
+      activities: null,
+      categories: null,
 
     }
   },
@@ -90,6 +81,9 @@ export default {
       }else{
         return 'No Activities, So sad :('
       }
+    },
+    isDataLoaded(){
+      return this.activities && this.categories
     }
   },
   created(){
@@ -104,7 +98,9 @@ export default {
         this.isFetching = false
     })
     this.user = fetchUser()
-    this.categories = fetchCategories()
+    fetchCategories().then(categories =>{
+      this.categories = categories
+    })
     console.log(this.user);
     console.log(this.categories);
 
