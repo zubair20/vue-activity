@@ -5,6 +5,9 @@ const generateUid = () => Math.floor(new Date() * Math.random())
 export const fetchActivities = () => {
     return fakeApi.get('activities', {force:1})
 }
+export const deleteActivityAPI = (activity) => {
+  return fakeApi.delete('activities', activity)
+}
 
 export const fetchCategories = () => {
   return fakeApi.get('categories', { force: 1 })

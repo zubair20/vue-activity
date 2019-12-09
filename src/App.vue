@@ -20,7 +20,7 @@
             </div>
             <div v-else>
               <div v-if="isFetching">Loading....</div>
-              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" :categories="categories" />
+              <ActivityItem v-for="activity in activities" :key="activity.id" :activity="activity" :categories="categories" @activityDeleted="handleActivityDelete" />
             </div>
             
             <div v-if="!isFetching">
@@ -40,7 +40,7 @@ import Vue from "vue";
 import ActivityItem from "@/components/ActivityItem";
 import ActivityCreate from "@/components/ActivityCreate";
 import TheNavbar from "@/components/TheNavbar";
-import {fetchActivities, fetchUser, fetchCategories} from "@/api";
+import { fetchActivities, fetchUser, fetchCategories, deleteActivityAPI } from '@/api'
 export default {
   name: 'app',
   components: {ActivityItem ,ActivityCreate, TheNavbar},
@@ -112,6 +112,13 @@ export default {
       //this.activities[newActivity.id] = newActivity
       Vue.set(this.activities, newActivity.id, newActivity)
       console.log(newActivity);
+    },
+    handleActivityDelete (activity) {
+      console.log(activity)
+      deleteActivityAPI(activity)
+        .then(deletedActivity => {
+          Vue.delete(this.activities, deletedActivity.id)
+        })
     }
     /*isFormValid(){
       return this.newActivity.title && this.newActivity.notes;
